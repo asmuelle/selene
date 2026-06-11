@@ -1,0 +1,8 @@
+# swiftformat config — keep in sync with AGENTS.md coding standards.
+--swiftversion 6.0
+--exclude .build,DerivedData,Selene.xcodeproj
+--indent 4
+--maxwidth 110
+--wraparguments before-first
+--wrapcollections before-first
+--stripunusedargs closure-only

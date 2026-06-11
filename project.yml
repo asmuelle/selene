@@ -1,0 +1,66 @@
+# XcodeGen spec — Selene.xcodeproj is generated from this file and never committed.
+name: Selene
+options:
+  bundleIdPrefix: app.selene
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+
+packages:
+  SelenePackages:
+    path: .
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    CODE_SIGNING_ALLOWED: "NO"
+    CODE_SIGN_IDENTITY: ""
+
+targets:
+  Selene:
+    type: application
+    platform: iOS
+    sources:
+      - App/Sources
+    dependencies:
+      - package: SelenePackages
+        products:
+          - SeleneCore
+          - CycleEngine
+          - Persistence
+          - InsightKit
+          - SeleneUI
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.selene.Selene
+        GENERATE_INFOPLIST_FILE: "YES"
+        INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "0.1.0"
+
+  SeleneAppUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - App/UITests
+    dependencies:
+      - target: Selene
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.selene.SeleneAppUITests
+        GENERATE_INFOPLIST_FILE: "YES"
+
+schemes:
+  Selene:
+    build:
+      targets:
+        Selene: all
+        SeleneAppUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - SeleneAppUITests

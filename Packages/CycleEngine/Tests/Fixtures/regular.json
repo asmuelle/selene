@@ -1,0 +1,193 @@
+{
+  "expected" : {
+    "cycleCount" : 5,
+    "engineVersion" : "cycle-engine\/1.0.0",
+    "forecastID" : "64500000-0000-0000-5250-000000000000",
+    "inputRangeEnd" : 20552,
+    "inputRangeStart" : 20440,
+    "nextPeriod" : {
+      "intervals" : [
+        {
+          "level" : 0.5,
+          "lowerApprox" : 20606.448361268296,
+          "lowerBits" : "4671393471350928904",
+          "upperApprox" : 20609.551638731704,
+          "upperBits" : "4671394324373342712"
+        },
+        {
+          "level" : 0.8,
+          "lowerApprox" : 20604.966713797025,
+          "lowerBits" : "4671393064078773172",
+          "upperApprox" : 20611.033286202975,
+          "upperBits" : "4671394731645498444"
+        },
+        {
+          "level" : 0.95,
+          "lowerApprox" : 20603.103366977524,
+          "lowerBits" : "4671392551885899517",
+          "upperApprox" : 20612.896633022476,
+          "upperBits" : "4671395243838372099"
+        }
+      ],
+      "medianApprox" : 20608,
+      "medianBits" : "4671393897862135808"
+    },
+    "ovulation" : {
+      "intervals" : [
+        {
+          "level" : 0.5,
+          "lowerApprox" : 20592.128623442535,
+          "lowerBits" : "4671389535171367372",
+          "upperApprox" : 20595.871376557465,
+          "upperBits" : "4671390563971509812"
+        },
+        {
+          "level" : 0.8,
+          "lowerApprox" : 20590.34166086709,
+          "lowerBits" : "4671389043974834846",
+          "upperApprox" : 20597.65833913291,
+          "upperBits" : "4671391055168042338"
+        },
+        {
+          "level" : 0.95,
+          "lowerApprox" : 20588.09434421716,
+          "lowerBits" : "4671388426237137873",
+          "upperApprox" : 20599.90565578284,
+          "upperBits" : "4671391672905739311"
+        }
+      ],
+      "medianApprox" : 20594,
+      "medianBits" : "4671390049571438592"
+    },
+    "posteriorAlphaBits" : "4617878467915022336",
+    "posteriorBetaBits" : "4627589354611539968",
+    "posteriorKappaBits" : "4621256167635550208",
+    "posteriorMuBits" : "4628574517030027264"
+  },
+  "flowDays" : [
+    {
+      "day" : 20440,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20441,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20442,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20443,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20444,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20468,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20469,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20470,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20471,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20472,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20496,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20497,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20498,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20499,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20500,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20524,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20525,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20526,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20527,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20528,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20552,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20553,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20554,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20555,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20556,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20580,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20581,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20582,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20583,
+      "flow" : "medium"
+    },
+    {
+      "day" : 20584,
+      "flow" : "medium"
+    }
+  ],
+  "mode" : "cycle",
+  "name" : "regular",
+  "seed" : 42,
+  "todayDay" : 20600
+}

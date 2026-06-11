@@ -1,0 +1,193 @@
+{
+  "expected" : {
+    "cycleCount" : 6,
+    "engineVersion" : "cycle-engine\/1.0.0",
+    "forecastID" : "FF4F0000-0000-0000-2F50-000000000000",
+    "inputRangeEnd" : 20449,
+    "inputRangeStart" : 20300,
+    "nextPeriod" : {
+      "intervals" : [
+        {
+          "level" : 0.5,
+          "lowerApprox" : 20504.38122552175,
+          "lowerBits" : "4671365415350287124",
+          "upperApprox" : 20511.818774478248,
+          "upperBits" : "4671367459768177080"
+        },
+        {
+          "level" : 0.8,
+          "lowerApprox" : 20500.848252101056,
+          "lowerBits" : "4671364444213947955",
+          "upperApprox" : 20515.35174789894,
+          "upperBits" : "4671368430904516249"
+        },
+        {
+          "level" : 0.95,
+          "lowerApprox" : 20496.44980134573,
+          "lowerBits" : "4671363235177010535",
+          "upperApprox" : 20519.750198654267,
+          "upperBits" : "4671369639941453669"
+        }
+      ],
+      "medianApprox" : 20508.1,
+      "medianBits" : "4671366437559232102"
+    },
+    "ovulation" : {
+      "intervals" : [
+        {
+          "level" : 0.5,
+          "lowerApprox" : 20490.237669025497,
+          "lowerBits" : "4671361527599080690",
+          "upperApprox" : 20497.9623309745,
+          "upperBits" : "4671363650937989082"
+        },
+        {
+          "level" : 0.8,
+          "lowerApprox" : 20486.56831161901,
+          "lowerBits" : "4671360518973796965",
+          "upperApprox" : 20501.63168838099,
+          "upperBits" : "4671364659563272807"
+        },
+        {
+          "level" : 0.95,
+          "lowerApprox" : 20482.000066706212,
+          "lowerBits" : "4671359263264196928",
+          "upperApprox" : 20506.199933293785,
+          "upperBits" : "4671365915272872844"
+        }
+      ],
+      "medianApprox" : 20494.1,
+      "medianBits" : "4671362589268534886"
+    },
+    "posteriorAlphaBits" : "4618441417868443648",
+    "posteriorBetaBits" : "4639691019391493734",
+    "posteriorKappaBits" : "4621819117588971520",
+    "posteriorMuBits" : "4628884139504408986"
+  },
+  "flowDays" : [
+    {
+      "day" : 20300,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20301,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20302,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20303,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20312,
+      "flow" : "spotting"
+    },
+    {
+      "day" : 20324,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20325,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20326,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20327,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20359,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20360,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20361,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20362,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20386,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20387,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20388,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20389,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20427,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20428,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20429,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20430,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20440,
+      "flow" : "spotting"
+    },
+    {
+      "day" : 20449,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20450,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20451,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20452,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20479,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20480,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20481,
+      "flow" : "heavy"
+    },
+    {
+      "day" : 20482,
+      "flow" : "heavy"
+    }
+  ],
+  "mode" : "cycle",
+  "name" : "irregular",
+  "seed" : 42,
+  "todayDay" : 20485
+}

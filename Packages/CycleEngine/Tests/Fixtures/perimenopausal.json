@@ -1,0 +1,161 @@
+{
+  "expected" : {
+    "cycleCount" : 6,
+    "engineVersion" : "cycle-engine\/1.0.0",
+    "forecastID" : "AF4F0000-0000-0000-904F-000000000000",
+    "inputRangeEnd" : 20355,
+    "inputRangeStart" : 20200,
+    "nextPeriod" : {
+      "intervals" : [
+        {
+          "level" : 0.5,
+          "lowerApprox" : 20423.741063794063,
+          "lowerBits" : "4671343249151415792",
+          "upperApprox" : 20438.525602872607,
+          "upperBits" : "4671347313094572834"
+        },
+        {
+          "level" : 0.8,
+          "lowerApprox" : 20416.657166144625,
+          "lowerBits" : "4671341301944456909",
+          "upperApprox" : 20445.609500522045,
+          "upperBits" : "4671349260301531717"
+        },
+        {
+          "level" : 0.95,
+          "lowerApprox" : 20407.68553698934,
+          "lowerBits" : "4671338835841812826",
+          "upperApprox" : 20454.58112967733,
+          "upperBits" : "4671351726404175800"
+        }
+      ],
+      "medianApprox" : 20431.133333333335,
+      "medianBits" : "4671345281122994313"
+    },
+    "ovulation" : {
+      "intervals" : [
+        {
+          "level" : 0.5,
+          "lowerApprox" : 20409.66711601381,
+          "lowerBits" : "4671339380534107517",
+          "upperApprox" : 20424.59955065286,
+          "upperBits" : "4671343485130486677"
+        },
+        {
+          "level" : 0.8,
+          "lowerApprox" : 20402.51235534944,
+          "lowerBits" : "4671337413848471410",
+          "upperApprox" : 20431.75431131723,
+          "upperBits" : "4671345451816122784"
+        },
+        {
+          "level" : 0.95,
+          "lowerApprox" : 20393.450979458354,
+          "lowerBits" : "4671334923076432435",
+          "upperApprox" : 20440.815687208316,
+          "upperBits" : "4671347942588161759"
+        }
+      ],
+      "medianApprox" : 20417.133333333335,
+      "medianBits" : "4671341432832297097"
+    },
+    "posteriorAlphaBits" : "4617540697942969549",
+    "posteriorBetaBits" : "4647727423179683704",
+    "posteriorKappaBits" : "4620130267728707584",
+    "posteriorMuBits" : "4629719181935317265"
+  },
+  "flowDays" : [
+    {
+      "day" : 20200,
+      "flow" : "light"
+    },
+    {
+      "day" : 20201,
+      "flow" : "light"
+    },
+    {
+      "day" : 20202,
+      "flow" : "light"
+    },
+    {
+      "day" : 20221,
+      "flow" : "light"
+    },
+    {
+      "day" : 20222,
+      "flow" : "light"
+    },
+    {
+      "day" : 20223,
+      "flow" : "light"
+    },
+    {
+      "day" : 20230,
+      "flow" : "spotting"
+    },
+    {
+      "day" : 20259,
+      "flow" : "light"
+    },
+    {
+      "day" : 20260,
+      "flow" : "light"
+    },
+    {
+      "day" : 20261,
+      "flow" : "light"
+    },
+    {
+      "day" : 20284,
+      "flow" : "light"
+    },
+    {
+      "day" : 20285,
+      "flow" : "light"
+    },
+    {
+      "day" : 20286,
+      "flow" : "light"
+    },
+    {
+      "day" : 20336,
+      "flow" : "light"
+    },
+    {
+      "day" : 20337,
+      "flow" : "light"
+    },
+    {
+      "day" : 20338,
+      "flow" : "light"
+    },
+    {
+      "day" : 20355,
+      "flow" : "light"
+    },
+    {
+      "day" : 20356,
+      "flow" : "light"
+    },
+    {
+      "day" : 20357,
+      "flow" : "light"
+    },
+    {
+      "day" : 20399,
+      "flow" : "light"
+    },
+    {
+      "day" : 20400,
+      "flow" : "light"
+    },
+    {
+      "day" : 20401,
+      "flow" : "light"
+    }
+  ],
+  "mode" : "perimenopause",
+  "name" : "perimenopausal",
+  "seed" : 42,
+  "todayDay" : 20410
+}
