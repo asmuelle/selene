@@ -12,6 +12,9 @@ struct RepoGuardTests {
         .deletingLastPathComponent() // repo root
 
     /// Networking primitives that must never appear outside `Paywall/`.
+    /// `import StoreKit` is on the list since M3: StoreKit is the one
+    /// permitted network surface and it is confined to the Paywall boundary —
+    /// every other module talks to `Paywall`'s protocol types instead.
     static let bannedNetworkingTokens = [
         "import Network",
         "URLSession",
@@ -20,6 +23,7 @@ struct RepoGuardTests {
         "CFSocket",
         "import CFNetwork",
         "NSURLConnection",
+        "import StoreKit",
     ]
 
     @Test("no networking primitive outside Paywall (invariant #1: zero egress)")

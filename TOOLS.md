@@ -44,6 +44,7 @@ in `AGENTS.md`. Dev/release tooling only:
 | Var | Purpose | Needed when |
 |---|---|---|
 | `ASC_KEY_ID` / `ASC_ISSUER_ID` / `ASC_KEY_P8` | App Store Connect API auth for future release automation (TestFlight/upload). | M3+, release lanes only. Never required for `just ci`. |
+| `SELENE_COMMERCE=storekit` (or launch arg `-commerce-storekit`) | Opt-in switch from the deterministic mock commerce provider to the real StoreKit 2 adapter (`PaywallConfiguration`). No credentials involved — StoreKit authenticates via the App Store / the local `App/Selene.storekit` config. | Manual StoreKit testing only. Never set in tests or CI; absent means the mock, never a failure. |
 
 ## Local services
 

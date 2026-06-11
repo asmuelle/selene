@@ -225,6 +225,40 @@ no medical-claim language (1.4.1 review pass).
 (Strip reading via `StripVision` ships when its held-out eval — including faint-line cases —
 clears the accuracy gate; it is feature-flagged independent of M3.)
 
+#### M3 implementation notes (monetization wiring, first slice)
+
+What ships in this slice, all behind tests:
+
+1. **Entitlement core** (`Paywall/`): `PurchaseProviding` is the commerce seam;
+   `EntitlementReducer` is the pure state machine (never-trialed / in-trial / expired /
+   subscribed / lifetime, restore and refund landing via snapshots); `EntitlementStore` wires
+   provider + injected `DayClock` + `FeatureGate`. No entitlement logic reads the system clock —
+   trial expiry is tested by advancing a fixed clock. The deterministic `MockPurchaseProvider`
+   carries every test and every non-StoreKit run of the app.
+2. **StoreKit 2 adapter** (`StoreKitPurchaseProvider`): real `Product.products`, `purchase()`,
+   `Transaction.currentEntitlements`, and a `Transaction.updates` listener behind the protocol.
+   Config-gated via `PaywallConfiguration`: the mock is the default everywhere; StoreKit
+   activates only on explicit opt-in (`SELENE_COMMERCE=storekit` / `-commerce-storekit`).
+   `App/Selene.storekit` defines both SKUs ($39.99/yr with 7-day free intro, $89.99 lifetime
+   non-consumable) and is contract-tested against `ProductID` in `PaywallTests`. A
+   StoreKitTest-backed sandbox E2E (`Packages/Paywall/StoreKitTests`, xcodebuild-only) buys both
+   SKUs against the local config on the simulator.
+3. **Gated insight surface** (closes the M2 surface gap): `GroundedAnswerService` is wired into
+   the app — ask flow with suggestion chips, grounded answer cards, and citation chips resolving
+   to exact pack sections (`CitationPresenter`). The surface renders ONLY when `FeatureGate`
+   allows `.groundedQA`; free users get the Lunar Almanac paywall screen whose entire copy lives
+   in `PaywallCopy` and passes a banned-medical-language scan (1.4.1). UI tests cover free →
+   locked → mock trial purchase → unlocked, lifetime → ask → citation detail, and expired →
+   locked again with the free tier untouched.
+4. **Egress invariant extended**: `import StoreKit` joined the repo-guard banned tokens outside
+   `Paywall/`; the no-egress flow suite now also runs the full mock commerce lifecycle (free →
+   trial → gated Q&A → chips) under the armed URLProtocol tripwire.
+
+Still open from the full M3 definition: the doctor-visit PDF artifact, the
+perimenopause-specific onboarding funnel variant, and voice logging — each gates on surfaces
+that don't exist yet, while their `Feature` gates (`.doctorVisitSummary`, `.voiceLogging`) are
+already enforced and tested.
+
 ## Risks & mitigations (from the adversarial review)
 
 1. **The privacy claim outruns reality** (iCloud backups Apple can decrypt, OS network paths,

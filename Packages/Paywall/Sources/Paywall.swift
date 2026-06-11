@@ -41,6 +41,7 @@ public enum Feature: CaseIterable, Sendable {
 
     // The AI layer (hard paywall, 7-day trial).
     case insightNarration
+    case groundedQA
     case voiceLogging
     case stripReading
     case doctorVisitSummary
@@ -48,7 +49,7 @@ public enum Feature: CaseIterable, Sendable {
     public var isFreeForever: Bool {
         switch self {
         case .manualLogging, .cycleHistory, .dataExport, .dataDelete: true
-        case .insightNarration, .voiceLogging, .stripReading, .doctorVisitSummary: false
+        case .insightNarration, .groundedQA, .voiceLogging, .stripReading, .doctorVisitSummary: false
         }
     }
 }

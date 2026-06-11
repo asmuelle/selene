@@ -1,11 +1,15 @@
+import Paywall
 import SeleneCore
 import SeleneUI
 import SwiftUI
 
-/// The M1 surface: lunar-almanac wheel above, tap-logging below. Calm, precise,
-/// no pink-petal idiom — deep ink indigo, moonlight ivory, one lunar-gold accent.
+/// The main surface: lunar-almanac wheel above, tap-logging below, and the
+/// gated insight layer (M3) at the end. Calm, precise, no pink-petal idiom —
+/// deep ink indigo, moonlight ivory, one lunar-gold accent.
 struct TodayView: View {
     let model: AppModel
+    let entitlements: EntitlementStore
+    let ask: AskSeleneModel
     @State private var isShowingPrivacyProof = false
     private let theme = SeleneTheme.night
 
@@ -22,11 +26,16 @@ struct TodayView: View {
                     }
                     flowSection
                     symptomSection
+                    InsightSection(entitlements: entitlements, ask: ask, theme: theme)
                 }
                 .padding(SeleneSpacing.block)
             }
         }
         .preferredColorScheme(.dark)
+        .task {
+            await entitlements.refresh()
+            entitlements.startObservingUpdates()
+        }
         .sheet(isPresented: $isShowingPrivacyProof) {
             PrivacyProofView(viewModel: PrivacyProofViewModel(inventory: model.dataInventory), theme: theme)
         }

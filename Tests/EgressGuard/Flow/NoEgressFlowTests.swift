@@ -100,6 +100,48 @@ struct NoEgressFlowTests {
         )
     }
 
+    @Test("the M3 monetization flow on the mock provider is egress-free")
+    @MainActor
+    func paywallMockCommerceFlowIsEgressFree() async {
+        // Arrange: tripwire armed, then the entire entitlement lifecycle on
+        // the deterministic provider — the configuration every test and every
+        // non-StoreKit run of the app uses. (The StoreKit adapter is config-
+        // gated behind PaywallConfiguration and never constructed here.)
+        EgressGuard.install()
+        let clock = FixedDayClock(today: DayNumber(20454))
+        let store = EntitlementStore(
+            provider: MockPurchaseProvider(clock: clock), clock: clock
+        )
+
+        // Free state: AI layer locked, free tier open.
+        await store.refresh()
+        #expect(store.state == .free)
+        #expect(!store.isUnlocked(.groundedQA))
+        #expect(store.isUnlocked(.manualLogging))
+
+        // Trial purchase unlocks the gated insight surface…
+        await store.purchase(.annual)
+        #expect(store.state == .trial(endsOn: DayNumber(20460)))
+        #expect(store.isUnlocked(.groundedQA))
+
+        // …which renders grounded Q&A with resolving citation chips.
+        let pack = ContentPackStore()
+        let qa = GroundedAnswerService(
+            model: MockLanguageModel(),
+            retriever: KeywordRetriever(store: pack),
+            pack: pack
+        )
+        let insight = await qa.answer(
+            question: "is a 24 day cycle normal at 44", today: clock.today
+        )
+        let chips = CitationPresenter.chips(for: insight, pack: pack)
+        #expect(!chips.isEmpty)
+        #expect(chips.count == insight.citations.count)
+
+        // Assert: the whole monetization + insight path attempted zero requests.
+        #expect(Self.coreFlowAttempts().isEmpty)
+    }
+
     @Test("an empty-store first-run flow is also egress-free")
     func firstRunFlowIsEgressFree() throws {
         // Arrange

@@ -30,6 +30,8 @@ targets:
           - CycleEngine
           - Persistence
           - InsightKit
+          - ContentPack
+          - Paywall
           - SeleneUI
     settings:
       base:
@@ -52,15 +54,42 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: app.selene.SeleneAppUITests
         GENERATE_INFOPLIST_FILE: "YES"
 
+  # StoreKitTest-backed sandbox E2E for the StoreKit 2 adapter (M3). Lives
+  # inside the Paywall boundary on purpose: this is the only test tree that
+  # may import StoreKit (repo guards enforce it). Runs only via xcodebuild on
+  # the simulator — `swift test` never needs an App Store or a simulator.
+  PaywallStoreKitTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Packages/Paywall/StoreKitTests
+      - path: App/Selene.storekit
+        buildPhase: resources
+    dependencies:
+      - target: Selene
+      - package: SelenePackages
+        products:
+          - Paywall
+          - SeleneCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.selene.PaywallStoreKitTests
+        GENERATE_INFOPLIST_FILE: "YES"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Selene.app/Selene"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
 schemes:
   Selene:
     build:
       targets:
         Selene: all
         SeleneAppUITests: [test]
+        PaywallStoreKitTests: [test]
     run:
       config: Debug
+      storeKitConfiguration: App/Selene.storekit
     test:
       config: Debug
       targets:
+        - PaywallStoreKitTests
         - SeleneAppUITests
