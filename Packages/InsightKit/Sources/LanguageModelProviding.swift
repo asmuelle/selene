@@ -37,6 +37,22 @@ public struct MockLanguageModel: LanguageModelProviding {
     }
 }
 
+/// Deterministic scripted mock: returns one fixed output for every prompt.
+/// Lets tests drive the citation validator with exact model output — including
+/// uncited and corrupted-citation cases — with zero model, zero network.
+public struct ScriptedLanguageModel: LanguageModelProviding {
+    public let isAvailable = true
+    public let output: String
+
+    public init(output: String) {
+        self.output = output
+    }
+
+    public func respond(to _: String) async throws(LanguageModelError) -> String {
+        output
+    }
+}
+
 /// Stand-in used when no on-device model exists (e.g. macOS test hosts, old
 /// hardware). Always throws `.unavailable` so fallback paths stay exercised.
 public struct UnavailableLanguageModel: LanguageModelProviding {

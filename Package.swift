@@ -70,6 +70,16 @@ let package = Package(
             path: "Packages/SeleneUI/Sources"
         ),
 
+        // MARK: Test support
+
+        // The URLProtocol egress harness (in-process substitute for a mitmproxy
+        // capture — see DESIGN.md). Test-only: never a dependency of any
+        // product the app links.
+        .target(
+            name: "EgressGuardKit",
+            path: "Tests/EgressGuard/Harness"
+        ),
+
         // MARK: Tests
 
         .testTarget(
@@ -105,7 +115,7 @@ let package = Package(
         ),
         .testTarget(
             name: "PaywallTests",
-            dependencies: ["Paywall", "SeleneCore"],
+            dependencies: ["Paywall", "SeleneCore", "EgressGuardKit"],
             path: "Packages/Paywall/Tests"
         ),
         .testTarget(
@@ -116,6 +126,20 @@ let package = Package(
         .testTarget(
             name: "RepoGuardTests",
             path: "Tests/RepoGuards"
+        ),
+        .testTarget(
+            name: "EgressGuardTests",
+            dependencies: [
+                "EgressGuardKit",
+                "SeleneCore",
+                "CycleEngine",
+                "Persistence",
+                "InsightKit",
+                "ContentPack",
+                "Paywall",
+                "SeleneUI",
+            ],
+            path: "Tests/EgressGuard/Flow"
         ),
     ]
 )

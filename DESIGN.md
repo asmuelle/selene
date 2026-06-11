@@ -183,6 +183,36 @@ pinning and refusal fallbacks; `ContentPack` v1 (perimenopause-weighted); voice 
 shipped `Insight` resolves all citation ids; forced-refusal test path renders template fallback;
 extraction eval ≥ agreed precision on the labeled corpus.
 
+#### Egress audit layers (implemented in M2)
+
+The zero-egress claim is enforced at three layers, each independently testable:
+
+1. **Static source scan** (`Tests/RepoGuards`): every `swift test` run greps `Packages/`,
+   `App/`, and `Tests/` for networking primitives (`URLSession`, `import Network`, sockets,
+   `NSURLConnection`, …) outside `Paywall/`, asserts the `Package.resolved` dependency
+   allowlist (GRDB only), and scans for tracking-SDK imports. Any hit fails the suite.
+2. **Runtime URLProtocol harness** (`Tests/EgressGuard`): `EgressInterceptor` is a
+   `URLProtocol` registered in-process that claims every URL-loading request, records it,
+   and fails the load before it can reach the network. `NoEgressFlowTests` runs the complete
+   core flow — tap-log → encrypted store → `CycleEngine` forecast → narration → grounded
+   Q&A → wheel/interval/privacy presentation — under the armed tripwire and fails on any
+   recorded attempt. A positive control inside `PaywallTests` (the only module allowed to
+   touch networking APIs) attempts a real `URLSession` load and asserts the harness records
+   and blocks it, proving the tripwire actually trips. **This harness is the local,
+   in-process substitute for a mitmproxy capture: mitmproxy is not part of the dev
+   toolchain, so the reproducible proxy-capture procedure remains a release-audit artifact
+   (see below) rather than a per-commit gate.**
+3. **User-facing proof** (`PrivacyProofView` / `PrivacyProofViewModel` in `SeleneUI`): the
+   in-app airplane-mode privacy-proof screen shows the zero-egress status, the complete
+   inventory of what data exists, where it lives (encrypted, backup-excluded, on-device —
+   or honestly "in-memory" in test sessions), and the verification steps a skeptical user
+   can reproduce (airplane-mode demo, iOS App Privacy Report).
+
+Still open from the M2 definition: the published mitmproxy release-audit walkthrough (needs
+mitmproxy, deliberately not in the dev harness), voice logging, and the AFM `@Generable`
+extraction eval against a labeled corpus (the extraction surface stays behind
+`LanguageModelProviding` with deterministic mocks until then).
+
 ### M3 — Monetization wiring
 
 StoreKit 2: $39.99/yr with 7-day trial + $89.99 lifetime; hard paywall gating insights, voice,

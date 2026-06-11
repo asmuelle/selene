@@ -1,6 +1,7 @@
 import Foundation
 import Persistence
 import SeleneCore
+import SeleneUI
 import SwiftUI
 
 /// Composition root. Builds the encrypted local store and hands the model to the
@@ -12,8 +13,8 @@ struct SeleneApp: App {
 
     init() {
         let arguments = ProcessInfo.processInfo.arguments
-        let store = Self.makeStore(arguments: arguments)
-        let model = AppModel(store: store)
+        let (store, storageLocation) = Self.makeStore(arguments: arguments)
+        let model = AppModel(store: store, storageLocation: storageLocation)
         if arguments.contains("-uitest-seed-history") {
             SeedHistory.seedRegularHistory(into: store)
         }
@@ -28,11 +29,14 @@ struct SeleneApp: App {
     }
 
     /// Real runs use the encrypted on-disk store; UI tests run fully in memory so
-    /// they leave no health data behind on the simulator.
-    private static func makeStore(arguments: [String]) -> any SeleneStoring {
+    /// they leave no health data behind on the simulator. The storage location is
+    /// surfaced honestly on the privacy-proof screen, so it travels with the store.
+    private static func makeStore(
+        arguments: [String]
+    ) -> (any SeleneStoring, DataInventory.StorageLocation) {
         if arguments.contains("-uitest-inmemory") {
             if let store = try? SeleneDatabase(inMemory: ()) {
-                return store
+                return (store, .inMemoryEphemeral)
             }
         }
         do {
@@ -42,14 +46,17 @@ struct SeleneApp: App {
                 appropriateFor: nil,
                 create: true
             )
-            return try SeleneDatabase(directory: support.appendingPathComponent("Selene", isDirectory: true))
+            let store = try SeleneDatabase(
+                directory: support.appendingPathComponent("Selene", isDirectory: true)
+            )
+            return (store, .onDeviceEncrypted)
         } catch {
             // Last-resort fallback keeps the app usable for this session; the next
             // launch retries the protected on-disk store.
             guard let memory = try? SeleneDatabase(inMemory: ()) else {
                 fatalError("Selene could not open any local store: \(error)")
             }
-            return memory
+            return (memory, .inMemoryEphemeral)
         }
     }
 }

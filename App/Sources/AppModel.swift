@@ -3,6 +3,7 @@ import Foundation
 import InsightKit
 import Observation
 import SeleneCore
+import SeleneUI
 
 /// Composition-root view model for the M1 vertical slice:
 /// tap-log → encrypted store → CycleEngine forecast → cycle wheel.
@@ -15,10 +16,12 @@ final class AppModel {
     private let store: any SeleneStoring
     private let narrator: any InsightNarrating
     private let todayProvider: @Sendable () -> DayNumber
+    private let storageLocation: DataInventory.StorageLocation
 
     private(set) var profile = UserProfile()
     private(set) var logs: [DailyLog] = []
     private(set) var todaySymptoms: [SymptomEvent] = []
+    private(set) var totalSymptomCount = 0
     private(set) var cycles: [Cycle] = []
     private(set) var forecast: Forecast?
     private(set) var narration: String?
@@ -37,14 +40,32 @@ final class AppModel {
         logs.first { $0.day == today }
     }
 
+    /// Inputs for the privacy-proof screen — exact counts, honest storage kind.
+    var dataInventory: DataInventory {
+        DataInventory(
+            dailyLogCount: logs.count,
+            symptomEventCount: totalSymptomCount,
+            hasForecast: forecast != nil,
+            storage: storageLocation
+        )
+    }
+
+    /// Credible-interval readout: the engine's own bounds, passed through
+    /// `ForecastIntervalPresentation` (which never alters them — invariant #3).
+    var intervalPresentation: ForecastIntervalPresentation? {
+        forecast.map { ForecastIntervalPresentation(window: $0.nextPeriod, today: today) }
+    }
+
     init(
         store: any SeleneStoring,
         narrator: any InsightNarrating = TemplateNarrator(),
-        todayProvider: @escaping @Sendable () -> DayNumber = { DayNumber(date: Date()) }
+        todayProvider: @escaping @Sendable () -> DayNumber = { DayNumber(date: Date()) },
+        storageLocation: DataInventory.StorageLocation = .onDeviceEncrypted
     ) {
         self.store = store
         self.narrator = narrator
         self.todayProvider = todayProvider
+        self.storageLocation = storageLocation
     }
 
     /// Loads persisted state and recomputes the forecast from the full log history.
@@ -53,6 +74,7 @@ final class AppModel {
             profile = try store.loadProfile() ?? UserProfile()
             logs = try store.dailyLogs()
             todaySymptoms = try store.symptomEvents(on: today)
+            totalSymptomCount = try store.symptomEvents().count
             try recomputeForecast()
             errorMessage = nil
         } catch {
@@ -86,6 +108,7 @@ final class AppModel {
                 try store.saveSymptomEvent(event)
             }
             todaySymptoms = try store.symptomEvents(on: today)
+            totalSymptomCount = try store.symptomEvents().count
             errorMessage = nil
         } catch {
             errorMessage = "Selene couldn't update that symptom. Your earlier data is untouched."

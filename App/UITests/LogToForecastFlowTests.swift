@@ -32,6 +32,34 @@ final class LogToForecastFlowTests: XCTestCase {
 
         // The privacy proof line is part of the chrome — the proof is the brand.
         XCTAssertTrue(app.staticTexts["privacy-proof-line"].exists)
+
+        // The credible-interval readout renders the engine's three levels (M2).
+        // (Combined accessibility elements — query by identifier, any type.)
+        XCTAssertTrue(element(in: app, identifier: "interval-row-50").exists)
+        XCTAssertTrue(element(in: app, identifier: "interval-row-80").exists)
+        XCTAssertTrue(element(in: app, identifier: "interval-row-95").exists)
+    }
+
+    func testPrivacyProofScreenShowsZeroEgressStatusAndDataInventory() {
+        let app = launchApp(seeded: true)
+
+        // Open the privacy-proof screen from the header badge.
+        let badge = app.buttons["privacy-proof-button"].firstMatch
+        XCTAssertTrue(badge.waitForExistence(timeout: 15))
+        badge.tap()
+
+        // Zero-egress status, the data inventory, and where it lives.
+        XCTAssertTrue(app.staticTexts["privacy-egress-status"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["privacy-airplane-line"].exists)
+        XCTAssertTrue(element(in: app, identifier: "privacy-data-daily-logs").exists)
+        XCTAssertTrue(element(in: app, identifier: "privacy-data-identity").exists)
+        XCTAssertTrue(app.staticTexts["privacy-location"].exists)
+    }
+
+    /// Identifier-first lookup: SwiftUI exposes combined elements with varying
+    /// XCUIElement types, so match on the identifier across any element type.
+    private func element(in app: XCUIApplication, identifier: String) -> XCUIElement {
+        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
 
     func testEmptyStoreShowsEmptyStateThenFirstPeriodLogStartsTheOrbit() {

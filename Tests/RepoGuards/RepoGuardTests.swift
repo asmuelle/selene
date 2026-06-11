@@ -52,6 +52,22 @@ struct RepoGuardTests {
         }
     }
 
+    @Test("repo-level test targets contain no networking primitives either")
+    func noNetworkingInRepoTests() throws {
+        // The egress harness (Tests/EgressGuard) deliberately uses URLProtocol —
+        // an interception point, not an egress primitive — and must itself stay
+        // free of session/socket APIs. Only this guard suite is exempt, because
+        // it names the banned tokens as string literals.
+        let testsURL = Self.repoRoot.appendingPathComponent("Tests")
+        for file in try Self.swiftFiles(under: testsURL) {
+            if file.path.contains("/Tests/RepoGuards/") { continue }
+            let source = try String(contentsOf: file, encoding: .utf8)
+            for token in Self.bannedNetworkingTokens where source.contains(token) {
+                Issue.record("networking token '\(token)' found in test tree: \(file.path)")
+            }
+        }
+    }
+
     @Test("dependency allowlist holds: GRDB only (invariant #2: zero third-party SDKs)")
     func dependencyAllowlist() throws {
         // Arrange

@@ -1,3 +1,22 @@
+import SeleneCore
+
+/// One addressable section inside a pack article. The `anchor` is the second
+/// half of a pinned `Citation` (sourceID + sectionAnchor): citations resolve to
+/// a *section*, not just an article, so every rendered claim points at the
+/// exact passage that grounds it.
+public struct ContentSection: Hashable, Codable, Sendable {
+    /// Stable section anchor, e.g. `cycle-changes`. Never reused or renamed.
+    public let anchor: String
+    public let heading: String
+    public let text: String
+
+    public init(anchor: String, heading: String, text: String) {
+        self.anchor = anchor
+        self.heading = heading
+        self.text = text
+    }
+}
+
 /// A citation-pinned passage from the curated content pack.
 ///
 /// Chunks are compiled into the app at build time and never fetched at runtime
@@ -16,24 +35,59 @@ public struct ContentChunk: Hashable, Codable, Sendable, Identifiable {
     public let title: String
     public let passage: String
     public let packVersion: String
+    /// Addressable sections; a citation must name one of these anchors to resolve.
+    public let sections: [ContentSection]
 
-    public init(id: String, source: Source, title: String, passage: String, packVersion: String) {
+    public init(
+        id: String,
+        source: Source,
+        title: String,
+        passage: String,
+        packVersion: String,
+        sections: [ContentSection]
+    ) {
         self.id = id
         self.source = source
         self.title = title
         self.passage = passage
         self.packVersion = packVersion
+        self.sections = sections
+    }
+
+    /// Convenience: a single-section chunk whose passage is its only section.
+    public init(id: String, source: Source, title: String, passage: String, packVersion: String) {
+        self.init(
+            id: id,
+            source: source,
+            title: title,
+            passage: passage,
+            packVersion: packVersion,
+            sections: [ContentSection(anchor: "overview", heading: title, text: passage)]
+        )
+    }
+
+    public func section(anchor: String) -> ContentSection? {
+        sections.first { $0.anchor == anchor }
     }
 }
 
-/// In-memory pack store with citation resolution. The M1 seed pack is tiny and
-/// editorial-reviewed; the full ACOG/NICE-derived pack plus embeddings is M2.
+/// A fully resolved citation: the pack article plus the exact section the
+/// pinned claim came from. Only constructible through `ContentPackStore.resolve`.
+public struct ResolvedCitation: Hashable, Sendable {
+    public let chunk: ContentChunk
+    public let section: ContentSection
+}
+
+/// In-memory pack store with citation resolution. v1 ships the editorial seed
+/// chunks plus the ACOG/NICE-derived fixture articles (perimenopause-weighted);
+/// the embedding index slots in behind `ContentRetrieving` later without
+/// changing this API.
 public struct ContentPackStore: Sendable {
-    public static let version = "pack-2026.06-seed"
+    public static let version = "pack-2026.06-v1"
 
     public let chunks: [ContentChunk]
 
-    public init(chunks: [ContentChunk] = ContentPackStore.seedChunks) {
+    public init(chunks: [ContentChunk] = ContentPackStore.seedChunks + PackArticles.v1) {
         self.chunks = chunks
     }
 
@@ -41,6 +95,19 @@ public struct ContentPackStore: Sendable {
     /// blocking defect upstream.
     public func chunk(citationID: String) -> ContentChunk? {
         chunks.first { $0.id == citationID }
+    }
+
+    /// Resolves a pinned citation to its article *and* section. Returns nil when
+    /// the source id is unknown or the anchor is not declared by that article —
+    /// callers must treat nil as a corrupted citation and drop the claim it pins.
+    public func resolve(_ citation: Citation) -> ResolvedCitation? {
+        guard
+            let chunk = chunk(citationID: citation.sourceID),
+            let section = chunk.section(anchor: citation.sectionAnchor)
+        else {
+            return nil
+        }
+        return ResolvedCitation(chunk: chunk, section: section)
     }
 
     public var hasUniqueIDs: Bool {

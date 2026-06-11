@@ -6,6 +6,7 @@ import SwiftUI
 /// no pink-petal idiom — deep ink indigo, moonlight ivory, one lunar-gold accent.
 struct TodayView: View {
     let model: AppModel
+    @State private var isShowingPrivacyProof = false
     private let theme = SeleneTheme.night
 
     var body: some View {
@@ -15,6 +16,7 @@ struct TodayView: View {
                 VStack(alignment: .leading, spacing: SeleneSpacing.section) {
                     header
                     wheelSection
+                    intervalSection
                     if let message = model.errorMessage {
                         errorBanner(message)
                     }
@@ -25,19 +27,58 @@ struct TodayView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $isShowingPrivacyProof) {
+            PrivacyProofView(viewModel: PrivacyProofViewModel(inventory: model.dataInventory), theme: theme)
+        }
     }
 
     // MARK: - Sections
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: SeleneSpacing.tight) {
-            Text("Selene")
-                .font(.system(.largeTitle, design: .serif, weight: .semibold))
-                .foregroundStyle(theme.text.color)
-            Text("Everything stays on this device — works in airplane mode.")
-                .font(.footnote)
-                .foregroundStyle(theme.textSecondary.color)
-                .accessibilityIdentifier("privacy-proof-line")
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: SeleneSpacing.tight) {
+                Text("Selene")
+                    .font(.system(.largeTitle, design: .serif, weight: .semibold))
+                    .foregroundStyle(theme.text.color)
+                Text("Everything stays on this device — works in airplane mode.")
+                    .font(.footnote)
+                    .foregroundStyle(theme.textSecondary.color)
+                    .accessibilityIdentifier("privacy-proof-line")
+            }
+            Spacer(minLength: SeleneSpacing.element)
+            Button {
+                isShowingPrivacyProof = true
+            } label: {
+                Image(systemName: "airplane.circle")
+                    .font(.title2)
+                    .foregroundStyle(theme.accentToday.color)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Privacy proof")
+            .accessibilityIdentifier("privacy-proof-button")
+        }
+    }
+
+    /// The engine's credible intervals, rendered verbatim (invariant #3): the
+    /// presentation layer passes every bound through bit-exact.
+    @ViewBuilder private var intervalSection: some View {
+        if let presentation = model.intervalPresentation {
+            VStack(alignment: .leading, spacing: SeleneSpacing.tight) {
+                sectionTitle("Forecast confidence")
+                ForEach(presentation.rows) { row in
+                    HStack(spacing: SeleneSpacing.element) {
+                        Text(row.levelLabel)
+                            .font(.footnote.monospacedDigit().weight(.semibold))
+                            .foregroundStyle(theme.accentToday.color)
+                            .frame(width: 44, alignment: .leading)
+                        Text(row.text)
+                            .font(.footnote)
+                            .foregroundStyle(theme.textSecondary.color)
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("interval-row-\(Int((row.level * 100).rounded()))")
+                }
+            }
         }
     }
 
