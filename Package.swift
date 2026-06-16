@@ -19,6 +19,8 @@ let package = Package(
         .library(name: "ContentPack", targets: ["ContentPack"]),
         .library(name: "Paywall", targets: ["Paywall"]),
         .library(name: "SeleneUI", targets: ["SeleneUI"]),
+        .library(name: "DoctorVisit", targets: ["DoctorVisit"]),
+        .library(name: "VoiceCapture", targets: ["VoiceCapture"]),
     ],
     dependencies: [
         // The single allowed third-party dependency (see AGENTS.md invariant #2).
@@ -68,6 +70,16 @@ let package = Package(
             name: "SeleneUI",
             dependencies: ["SeleneCore", "CycleEngine"],
             path: "Packages/SeleneUI/Sources"
+        ),
+        .target(
+            name: "DoctorVisit",
+            dependencies: ["SeleneCore", "CycleEngine", "ContentPack"],
+            path: "Packages/DoctorVisit/Sources"
+        ),
+        .target(
+            name: "VoiceCapture",
+            dependencies: ["SeleneCore", "InsightKit"],
+            path: "Packages/VoiceCapture/Sources"
         ),
 
         // MARK: Test support
@@ -124,6 +136,16 @@ let package = Package(
             path: "Packages/SeleneUI/Tests"
         ),
         .testTarget(
+            name: "DoctorVisitTests",
+            dependencies: ["DoctorVisit", "CycleEngine", "ContentPack", "SeleneCore"],
+            path: "Packages/DoctorVisit/Tests"
+        ),
+        .testTarget(
+            name: "VoiceCaptureTests",
+            dependencies: ["VoiceCapture", "InsightKit", "SeleneCore"],
+            path: "Packages/VoiceCapture/Tests"
+        ),
+        .testTarget(
             name: "RepoGuardTests",
             path: "Tests/RepoGuards"
         ),
@@ -138,6 +160,8 @@ let package = Package(
                 "ContentPack",
                 "Paywall",
                 "SeleneUI",
+                "DoctorVisit",
+                "VoiceCapture",
             ],
             path: "Tests/EgressGuard/Flow"
         ),

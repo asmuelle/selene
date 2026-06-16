@@ -33,6 +33,8 @@ targets:
           - ContentPack
           - Paywall
           - SeleneUI
+          - DoctorVisit
+          - VoiceCapture
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.selene.Selene

@@ -134,18 +134,67 @@ public enum TrackingMode: String, CaseIterable, Codable, Sendable {
 }
 
 /// Local-only profile. No name, no email, no account id — by invariant #6.
+///
+/// M4 adds the perimenopause-onboarding funnel fields (`focusSymptoms`,
+/// `hasCompletedOnboarding`). Decoding is BACKWARD-COMPATIBLE: profiles stored
+/// before M4 lack these keys, so the custom `init(from:)` defaults any missing
+/// field rather than failing the row (which would surface as `.corruptRow`).
 public struct UserProfile: Hashable, Codable, Sendable {
     public let mode: TrackingMode
     public let typicalCycleLengthPrior: Double?
     public let hasSeenBackupGuidance: Bool
+    /// Symptoms the user told us to prioritise during onboarding. Drives insight
+    /// ordering (perimenopause funnel) without changing any engine number.
+    public let focusSymptoms: Set<SymptomCode>
+    /// Whether the funnel ran to completion (vs. an upgrade from a pre-M4 profile
+    /// or a skipped first launch).
+    public let hasCompletedOnboarding: Bool
 
     public init(
         mode: TrackingMode = .cycle,
         typicalCycleLengthPrior: Double? = nil,
-        hasSeenBackupGuidance: Bool = false
+        hasSeenBackupGuidance: Bool = false,
+        focusSymptoms: Set<SymptomCode> = [],
+        hasCompletedOnboarding: Bool = false
     ) {
         self.mode = mode
         self.typicalCycleLengthPrior = typicalCycleLengthPrior
         self.hasSeenBackupGuidance = hasSeenBackupGuidance
+        self.focusSymptoms = focusSymptoms
+        self.hasCompletedOnboarding = hasCompletedOnboarding
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case mode, typicalCycleLengthPrior, hasSeenBackupGuidance
+        case focusSymptoms, hasCompletedOnboarding
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        mode = try container.decodeIfPresent(TrackingMode.self, forKey: .mode) ?? .cycle
+        typicalCycleLengthPrior = try container.decodeIfPresent(
+            Double.self, forKey: .typicalCycleLengthPrior
+        )
+        hasSeenBackupGuidance = try container.decodeIfPresent(
+            Bool.self, forKey: .hasSeenBackupGuidance
+        ) ?? false
+        focusSymptoms = try container.decodeIfPresent(
+            Set<SymptomCode>.self, forKey: .focusSymptoms
+        ) ?? []
+        hasCompletedOnboarding = try container.decodeIfPresent(
+            Bool.self, forKey: .hasCompletedOnboarding
+        ) ?? false
+    }
+
+    /// Returns a copy in perimenopause mode with the chosen focus symptoms — the
+    /// funnel's commit step, expressed immutably.
+    public func adoptingPerimenopauseFocus(_ symptoms: Set<SymptomCode>) -> UserProfile {
+        UserProfile(
+            mode: .perimenopause,
+            typicalCycleLengthPrior: typicalCycleLengthPrior,
+            hasSeenBackupGuidance: hasSeenBackupGuidance,
+            focusSymptoms: symptoms,
+            hasCompletedOnboarding: true
+        )
     }
 }

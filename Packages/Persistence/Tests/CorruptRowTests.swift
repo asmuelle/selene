@@ -81,15 +81,27 @@ struct CorruptRowTests {
         }
     }
 
-    @Test("a corrupt profile payload throws corruptRow")
+    @Test("a non-JSON profile payload throws corruptRow")
     func corruptProfilePayload() throws {
+        let store = try storeWithRawRow(
+            sql: "INSERT INTO user_profile (id, payload) VALUES (?, ?)",
+            arguments: [1, #require("not json".data(using: .utf8))]
+        )
+        #expect(throws: Persistence.PersistenceError.self) {
+            _ = try store.loadProfile()
+        }
+    }
+
+    @Test("an empty-object profile payload decodes with defaults (M4 backward-compat)")
+    func emptyObjectProfileDecodesToDefault() throws {
+        // M4 made UserProfile decoding tolerant of missing keys so pre-M4 rows
+        // survive an upgrade. `{}` is therefore a valid (default) profile now,
+        // not a corrupt row.
         let store = try storeWithRawRow(
             sql: "INSERT INTO user_profile (id, payload) VALUES (?, ?)",
             arguments: [1, #require("{}".data(using: .utf8))]
         )
-        // UserProfile decode of {} fails because `mode` is required.
-        #expect(throws: Persistence.PersistenceError.self) {
-            _ = try store.loadProfile()
-        }
+        let profile = try store.loadProfile()
+        #expect(profile == UserProfile())
     }
 }

@@ -1,5 +1,6 @@
 import ContentPack
 import CycleEngine
+import DoctorVisit
 import EgressGuardKit
 import InsightKit
 import Paywall
@@ -7,6 +8,7 @@ import Persistence
 import SeleneCore
 import SeleneUI
 import Testing
+import VoiceCapture
 
 /// The runtime egress proof (invariant #1): the complete core flow — capture →
 /// store → engine → narration → grounded Q&A → UI presentation — runs with the
@@ -139,6 +141,66 @@ struct NoEgressFlowTests {
         #expect(chips.count == insight.citations.count)
 
         // Assert: the whole monetization + insight path attempted zero requests.
+        #expect(Self.coreFlowAttempts().isEmpty)
+    }
+
+    @Test("the M4 plane — extraction, voice capture, doctor-visit PDF — is egress-free")
+    func m4DataPlaneIsEgressFree() async throws {
+        // Arrange: tripwire armed before any M4 product code runs.
+        EgressGuard.install()
+        let store = try SeleneDatabase(inMemory: ())
+        let today = DayNumber(20454)
+
+        // Capture three perimenopause-flavoured cycles plus symptoms.
+        for cycleIndex in 0 ..< 3 {
+            let start = DayNumber(20340 + 28 * cycleIndex)
+            for offset in 0 ..< 4 {
+                try store.saveDailyLog(DailyLog(
+                    day: start.advanced(by: offset),
+                    flow: offset == 0 ? .heavy : .medium
+                ))
+            }
+            try store.saveSymptomEvent(SymptomEvent(
+                day: start.advanced(by: 1), code: .nightSweats, severity: .moderate
+            ))
+        }
+        let cycles = try CycleDetector.detectCycles(from: store.dailyLogs())
+        let forecast = try BayesianForecaster.forecast(
+            cycles: cycles, profile: UserProfile(mode: .perimenopause), today: today
+        )
+        try store.saveForecast(forecast)
+
+        // 1. On-device extraction of a free-text phrase.
+        let extractor = KeywordSymptomExtractor()
+        let extracted = await extractor.extract(from: "hot flashes and couldn't sleep")
+        #expect(extracted.codes == [.hotFlashes, .insomnia])
+
+        // 2. Voice capture: transcription → extraction, gated, suggestive.
+        let voiceFlow = VoiceCaptureFlow(
+            voice: MockVoiceLogger(transcripts: ["r": "night sweats and brain fog"]),
+            extractor: extractor
+        )
+        let outcome = await voiceFlow.capture(
+            VoiceRecording(localID: "r", durationSeconds: 2.0), isEntitled: true
+        )
+        guard case .transcribed = outcome else {
+            Issue.record("expected a transcribed voice outcome")
+            return
+        }
+
+        // 3. Doctor-visit document + PDF/text rendering.
+        let document = try DoctorVisitAssembler(store: store).makeDocument(
+            range: DayNumber(20340) ... today, generatedAtDay: today, isEntitled: true
+        )
+        let bytes = try PlainTextDoctorVisitRenderer().render(document)
+        #expect(!bytes.isEmpty)
+        #expect(!document.forecastWindows.isEmpty)
+
+        // 4. The extraction eval itself runs offline.
+        let report = await ExtractionEval.run(extractor)
+        #expect(report.passesGate)
+
+        // Assert: not one request from the entire M4 plane.
         #expect(Self.coreFlowAttempts().isEmpty)
     }
 

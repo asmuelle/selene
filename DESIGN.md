@@ -259,6 +259,95 @@ perimenopause-specific onboarding funnel variant, and voice logging — each gat
 that don't exist yet, while their `Feature` gates (`.doctorVisitSummary`, `.voiceLogging`) are
 already enforced and tested.
 
+### M4 — On-device data plane (TestFlight-ready core)
+
+M4 closes the product loop entirely on-device (by invariant #1, nothing leaves
+the phone): the doctor-visit artifact, the perimenopause onboarding funnel, a
+real FoundationModels extraction path with an eval harness, and voice-logging
+readiness. Everything verifiable on macOS is unit-tested in the SPM core; the
+platform-AI surfaces sit behind protocols with deterministic mocks so `swift
+test` passes with no model and no microphone.
+
+**Verified on macOS (`swift test`): 233 tests in 46 suites pass** (up from 177
+at M3). swiftformat clean; the repo-guard greps and the runtime no-egress
+URLProtocol harness remain green, both extended to cover the new code. The app
+shell builds for the iPhone 17 Pro simulator (iOS 26) via `just build` and links
+the two new modules.
+
+#### Delivered
+
+1. **Doctor-visit summary** (`DoctorVisit/`, new module; behind
+   `.doctorVisitSummary`). `DoctorVisitDocument` is a pure, render-agnostic model
+   assembled by `DoctorVisitAssembler` from the store + `CycleEngine` only — cycle
+   stats, the symptom-cluster table (`CycleEngine.SymptomClusterAnalyzer`), and
+   forecast windows whose credible-interval bounds equal the engine's **verbatim**
+   (golden test asserts every level/lower/upper matches `Forecast`). No LLM is
+   involved in the document structure. Standing copy is pinned to `ContentPack`
+   citations (resolution asserted) and passes a banned-medical-language scan. The
+   assembler throws `.notEntitled` without the gate (enforcement test). Rendering
+   is a thin seam (`DoctorVisitRendering`): the deterministic
+   `PlainTextDoctorVisitRenderer` carries the tests and proves no value is
+   introduced beyond the document; the real `PDFDoctorVisitRenderer`
+   (`UIGraphicsPDFRenderer`) is `#if canImport(UIKit)` + `@available`-guarded.
+2. **Perimenopause onboarding funnel.** `UserProfile` gains `focusSymptoms` and
+   `hasCompletedOnboarding` with **backward-compatible decoding** (a custom
+   `init(from:)` defaults missing keys, so pre-M4 stored profiles upgrade instead
+   of becoming corrupt rows — a Persistence test pins this). `OnboardingFunnel`
+   (in `SeleneCore`) is the pure question-set + reducer; `InsightKit.InsightOrdering`
+   adapts the Today surface order so perimenopause-relevant surfaces lead in
+   perimenopause mode (and are boosted when recent perimenopause symptoms appear
+   in cycle mode). Ordering and funnel logic are unit-tested; onboarding copy
+   passes the banned-language scan.
+3. **FoundationModels extraction + eval harness.** `SymptomExtracting` is the new
+   extraction seam; `KeywordSymptomExtractor` is the deterministic default that
+   carries the tests. A checked-in labeled corpus (`ExtractionCorpus`, **40
+   synthetic cases**, perimenopause-weighted) plus `ExtractionEval` score any
+   implementation on micro-averaged precision/recall/F1 and flow accuracy against
+   documented gates (precision ≥ 0.85, recall ≥ 0.85, flow ≥ 0.80). The eval runs
+   **green against the deterministic mock locally**. The real
+   `FoundationModelProvider` (`LanguageModelProviding`) and `FoundationModelExtractor`
+   (`@Generable` guided generation constrained to the taxonomy) are
+   `#if canImport(FoundationModels)` + `@available(iOS 26)`-guarded; the
+   real-model eval is **device-blocked** (no Apple Intelligence in CI) and
+   documented as such.
+4. **Voice-logging readiness** (`VoiceCapture/`, new module; behind
+   `.voiceLogging`). `VoiceLogging` is the on-device ASR seam with a deterministic
+   `MockVoiceLogger` carrying the tests and a `SpeechTranscriber`/`SpeechAnalyzer`
+   implementation (`SpeechVoiceLogger`) that is `#if canImport(Speech)` +
+   `@available(iOS 26)`-guarded. `VoiceCaptureFlow` wires transcription →
+   extraction → candidate entries behind the gate; output stays suggestive
+   (confirm-before-commit) and zero-egress, reusing the same `SymptomExtracting`
+   as typed text.
+
+#### Invariants re-verified in M4
+
+- **No-egress harness extended:** a new `NoEgressFlowTests` case runs extraction,
+  voice capture, doctor-visit assembly + rendering, and the eval under the armed
+  URLProtocol tripwire and asserts zero attempts. The static repo-guard greps now
+  also scan the new modules and the app-shell `M4Composition` (no networking
+  tokens outside `Paywall/`).
+- **Deterministic before LLM:** every value the doctor-visit summary shows traces
+  to the store or `CycleEngine`; the FM extractor never auto-commits and is not
+  asked to invent flow or numbers.
+- **Gate enforcement:** doctor-visit assembly and voice capture both refuse
+  without their entitlement (tested); the free logging tier is untouched.
+- **Banned-language scans** cover all new user-/clinician-facing copy
+  (doctor-visit, onboarding).
+
+#### Deferred / device-blocked (honest)
+
+- The rich SwiftUI surfaces for the doctor-visit preview, the onboarding funnel
+  screens, and the voice-capture sheet are **not** built — `M4Composition` wires
+  the tested core modules into the app shell behind the gates, but the heavy view
+  layer and its UI tests are deferred (they verify on-device, not in `swift
+  test`).
+- The **real-model** extraction eval, FM narration/extraction quality, and live
+  `SpeechTranscriber` transcription are device-blocked (require Apple Intelligence
+  / a microphone) and run only the guarded code paths there; locally the mocks
+  carry every test.
+- Real audio capture/session management (AVAudioEngine wiring) lives in the app
+  shell and is out of the tested SPM core.
+
 ## Risks & mitigations (from the adversarial review)
 
 1. **The privacy claim outruns reality** (iCloud backups Apple can decrypt, OS network paths,
