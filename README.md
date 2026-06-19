@@ -2,19 +2,6 @@
 
 > A cycle, fertility, and perimenopause tracker whose AI insight engine runs entirely on-device — no server to subpoena, breach, or sell data from, verifiable in airplane mode.
 
-**Category:** Edge AI / on-device inference (iOS + Android) · **Status:** ✅ Recommended (Top 5 of the edge-AI run)
-
-## Scorecard
-
-| Metric | Score |
-|---|---|
-| Rank (of 9 finalists) | #1 |
-| Combined score | 6.2 |
-| Monetization potential (1-10) | 8 |
-| Feasibility (1-10) | 6 |
-| Edge AI structurally essential | Yes |
-| Skeptic verdict | weakened |
-
 ## Concept
 
 A cycle, fertility, and perimenopause tracker whose AI insight engine runs entirely on-device — no server to subpoena, breach, or sell data from, verifiable in airplane mode.
