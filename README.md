@@ -1,5 +1,7 @@
 # Selene
 
+[![CI](https://github.com/asmuelle/selene/actions/workflows/ci.yml/badge.svg)](https://github.com/asmuelle/selene/actions/workflows/ci.yml)
+
 > A cycle, fertility, and perimenopause tracker whose AI insight engine runs entirely on-device — no server to subpoena, breach, or sell data from, verifiable in airplane mode.
 
 ## Concept
