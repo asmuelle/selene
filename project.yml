@@ -92,6 +92,7 @@ schemes:
       storeKitConfiguration: App/Selene.storekit
     test:
       config: Debug
+      storeKitConfiguration: App/Selene.storekit
       targets:
         - PaywallStoreKitTests
         - SeleneAppUITests
