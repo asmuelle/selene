@@ -70,5 +70,9 @@ format:
     @command -v swiftformat >/dev/null 2>&1 || { echo "error: swiftformat not installed — brew install swiftformat"; exit 1; }
     swiftformat .
 
+# verify formatting (swiftformat --lint); CI gate
+format-check:
+    swiftformat --lint .
+
 # Full local gate: lint + build + test (same as CI)
-ci: lint build test
+ci: lint build test format-check
