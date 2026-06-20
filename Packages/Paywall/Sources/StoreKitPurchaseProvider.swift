@@ -19,12 +19,7 @@ public actor StoreKitPurchaseProvider: PurchaseProviding {
     // MARK: - Products
 
     public func availableProducts() async throws(PurchaseError) -> [PaywallProduct] {
-        let storeProducts: [Product]
-        do {
-            storeProducts = try await Product.products(for: ProductID.allCases.map(\.rawValue))
-        } catch {
-            throw .productsUnavailable
-        }
+        let storeProducts = try await loadProducts(for: ProductID.allCases.map(\.rawValue))
         let mapped = storeProducts.compactMap { product -> PaywallProduct? in
             guard let id = ProductID(rawValue: product.id) else {
                 return nil
@@ -39,12 +34,29 @@ public actor StoreKitPurchaseProvider: PurchaseProviding {
         return mapped.sorted { $0.id.rawValue < $1.id.rawValue }
     }
 
+    /// StoreKit product loading is eventually-consistent on a cold start: on a
+    /// freshly booted device or CI simulator, `Product.products(for:)` can
+    /// briefly return empty or throw before the StoreKit configuration has
+    /// synced. Retry a bounded number of times so the paywall is robust on
+    /// first launch. Returns immediately once products are available.
+    private func loadProducts(for ids: [String]) async throws(PurchaseError) -> [Product] {
+        for attempt in 0 ..< 10 {
+            if let products = try? await Product.products(for: ids), !products.isEmpty {
+                return products
+            }
+            if attempt < 9 {
+                try? await Task.sleep(for: .milliseconds(200))
+            }
+        }
+        throw .productsUnavailable
+    }
+
     // MARK: - Purchase / restore
 
     public func purchase(_ productID: ProductID) async throws(PurchaseError) -> EntitlementSnapshot {
         let result: Product.PurchaseResult
         do {
-            let products = try await Product.products(for: [productID.rawValue])
+            let products = try await loadProducts(for: [productID.rawValue])
             guard let product = products.first else {
                 throw PurchaseError.productsUnavailable
             }
